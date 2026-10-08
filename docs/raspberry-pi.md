@@ -17,7 +17,7 @@ screen, keyboard and mouse. Everything runs on the Pi.
 | Power | the official 27 W USB-C supply |
 | Camera | a USB webcam, **or an Android phone as a Wi-Fi camera** ([phone-camera.md](phone-camera.md)). The Pi Camera Module (CSI) is not supported by the app |
 | Audio | a USB speakerphone (microphone + speaker in one, best) or a USB microphone + speaker/HDMI audio |
-| Chat model | one `.litertlm` file, e.g. Gemma 4 E2B (2.5 GB) from `huggingface.co/litert-community/gemma-4-E2B-it-litert-lm`; everything else is inside the app |
+| Chat model | one `.litertlm` file, e.g. Gemma 4 E2B (2.6 GB, no login needed) from [litert-community/gemma-4-E2B-it-litert-lm](https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm) (step 3); everything else is inside the app |
 
 ## 1. Prepare the Pi
 
@@ -32,9 +32,14 @@ PipeWire sound server).
 
 ## 2. Install the app
 
-Copy `litert_hackathon-v0.1.2-linux-arm64.tar.gz` to the Pi (USB stick, `scp`, or download), then:
+Download the Linux arm64 package from the
+[v0.1.2 release](https://github.com/DenisovAV/litert-edge-demos/releases/tag/v0.1.2) on the Pi (or copy it over: USB stick, `scp`),
+check it, unpack it and start it:
 ```sh
 cd ~
+wget https://github.com/DenisovAV/litert-edge-demos/releases/download/v0.1.2/litert_hackathon-v0.1.2-linux-arm64.tar.gz \
+     https://github.com/DenisovAV/litert-edge-demos/releases/download/v0.1.2/SHA256SUMS
+sha256sum --ignore-missing -c SHA256SUMS
 tar -xzf litert_hackathon-v0.1.2-linux-arm64.tar.gz
 cd litert_hackathon-v0.1.2-linux-arm64
 ./run.sh
@@ -45,10 +50,10 @@ install it, then starts the app. A log of every run is kept in `~/.local/state/l
 ## 3. First launch: the chat model
 
 Every model except the chat model is inside the app. Put your `.litertlm` into the models folder before or after
-the first start:
+the first start, for example straight from Hugging Face (2.6 GB):
 ```sh
 mkdir -p ~/litert-demos/models
-cp ~/Downloads/gemma-4-E2B-it.litertlm ~/litert-demos/models/
+wget -P ~/litert-demos/models https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it.litertlm
 ```
 On **Set up models**, the **CHAT MODEL** card lists the files in `~/litert-demos/models/` (**Rescan** if needed,
 **Path…** for a file elsewhere). Tap it, choose **CPU** (see step 4), then **Use this model**.

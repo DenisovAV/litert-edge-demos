@@ -12,13 +12,17 @@ chat model** — one `.litertlm` file (a Gemma build for your phone's NPU, or Ge
 
 ## 1. Which build do I take?
 
-| Your device | File | Requirements |
-|---|---|---|
-| Android phone or tablet | `android/litert_hackathon-v0.1.2-arm64.apk` | Android 11+, 64-bit ARM, **8 GB RAM recommended**, ~4 GB free storage (app + its models + your chat model) |
-| Linux PC / laptop | `linux/litert_hackathon-v0.1.2-linux-x64.tar.gz` | Ubuntu 22.04+ (or any distro with glibc ≥ 2.35), a GPU with a **Vulkan** driver (NVIDIA proprietary driver, or Mesa for AMD/Intel), PulseAudio or PipeWire |
-| NVIDIA Jetson Orin (Nano 8 GB, NX, AGX), Raspberry Pi 5 (8/16 GB) | `linux/litert_hackathon-v0.1.2-linux-arm64.tar.gz` | **JetPack 6** or newer (JetPack 5 is not supported). See [jetson-check.md](jetson-check.md) |
+The files are on the [v0.1.2 release page](https://github.com/DenisovAV/litert-edge-demos/releases/tag/v0.1.2).
 
-Check the download against `linux/SHA256SUMS` (`sha256sum -c SHA256SUMS`).
+| Your device | File | Requirements | Guide |
+|---|---|---|---|
+| Android phone or tablet | `litert_hackathon-v0.1.2-arm64.apk` | Android 11+, 64-bit ARM, **8 GB RAM recommended**, ~4 GB free storage (app + its models + your chat model) | [android-install.md](android-install.md) |
+| Linux PC / laptop | `litert_hackathon-v0.1.2-linux-x64.tar.gz` | Ubuntu 22.04+ (or any distro with glibc ≥ 2.35), a GPU with a **Vulkan** driver (NVIDIA proprietary driver, or Mesa for AMD/Intel), PulseAudio or PipeWire | this page |
+| Raspberry Pi 5 (8/16 GB) | `litert_hackathon-v0.1.2-linux-arm64.tar.gz` | Raspberry Pi OS 64-bit, Bookworm or newer | [raspberry-pi.md](raspberry-pi.md) |
+| NVIDIA Jetson Orin (Nano 8 GB, NX, AGX) | `litert_hackathon-v0.1.2-linux-arm64.tar.gz` | **JetPack 6** or newer (JetPack 5 is not supported) | [jetson.md](jetson.md), [jetson-check.md](jetson-check.md) |
+| Arduino VENTUNO Q | `litert_hackathon-v0.1.2-linux-arm64.tar.gz` | its Ubuntu 24.04 system | [ventuno-q.md](ventuno-q.md) |
+
+Check the download against `SHA256SUMS` from the same page (`sha256sum --ignore-missing -c SHA256SUMS`).
 
 ## 2. Install
 

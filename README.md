@@ -21,6 +21,24 @@ or a download link), for example the ungated
 (`gemma-4-E2B-it.litertlm` for the GPU or CPU, or a Qualcomm NPU build such as `gemma-4-E2B-it_qualcomm_sm8750.litertlm`
 for its chip). Its settings start from the file's header.
 
+## Download and install
+
+Ready-made builds are on the [v0.1.2 release page](https://github.com/DenisovAV/litert-edge-demos/releases/tag/v0.1.2);
+the chat model comes from [litert-community/gemma-4-E2B-it-litert-lm](https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm)
+(no login needed).
+
+| Device | Build | Guide |
+|---|---|---|
+| Android phone (Android 11+, 64-bit, 8 GB RAM recommended) | `litert_hackathon-v0.1.2-arm64.apk` | [docs/android-install.md](docs/android-install.md) |
+| Arduino VENTUNO Q (Qualcomm QCS8275) | `litert_hackathon-v0.1.2-linux-arm64.tar.gz` | [docs/ventuno-q.md](docs/ventuno-q.md) |
+| Raspberry Pi 5 (8/16 GB) | `litert_hackathon-v0.1.2-linux-arm64.tar.gz` | [docs/raspberry-pi.md](docs/raspberry-pi.md) |
+| NVIDIA Jetson Orin (JetPack 6) | `litert_hackathon-v0.1.2-linux-arm64.tar.gz` | [docs/jetson.md](docs/jetson.md) |
+| Linux PC (x64, Ubuntu 22.04+, Vulkan GPU) | `litert_hackathon-v0.1.2-linux-x64.tar.gz` | [docs/testers.md](docs/testers.md) |
+
+One arm64 package serves all three boards; only the backend differs (GPU through Vulkan or the CPU; the Qualcomm NPU
+on Android today, on Linux in progress). Every guide ends with `./run.sh --selftest` (or the in-app self-test), whose
+report says where each model really ran.
+
 ## Building from source
 
 The models built into the app are not in git: YOLO26n, EmbeddingGemma-300M, Whisper base, moonshine-tiny and

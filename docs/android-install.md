@@ -10,18 +10,22 @@ inside the app. **You bring the chat model**: one `.litertlm` file, copied to th
   (Snapdragon 8 Gen 3, GPU) and a Galaxy S26 (Snapdragon 8 Elite Gen 5, NPU).
 - **Free storage:** about **4 GB** (the app 0.6 GB, its built-in models unpacked once 0.4 GB, and the chat model
   about 2.6 GB).
-- **The chat model file** (`.litertlm`), one of:
-  - a **Gemma build for your phone's Qualcomm NPU**, e.g. `gemma4_2b_SM8850.litertlm` for a Snapdragon 8 Elite Gen 5
-    (SM8850). NPU builds only run on the chip family they were compiled for;
-  - or the general **Gemma 4 E2B** for the GPU, which runs on any recent phone:
-    `https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm` → `gemma-4-E2B-it.litertlm` (2.5 GB).
+- **The chat model file** (`.litertlm`), one of, from
+  [litert-community/gemma-4-E2B-it-litert-lm](https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm)
+  (no login needed):
+  - the general **Gemma 4 E2B** for the GPU, which runs on any recent phone: `gemma-4-E2B-it.litertlm` (2.6 GB);
+  - or a **Gemma build for your phone's Qualcomm NPU**, e.g. `gemma-4-E2B-it_qualcomm_sm8750.litertlm` for a
+    Snapdragon 8 Elite (SM8750). NPU builds only run on the chip they were compiled for. (Our NPU test ran on a
+    Galaxy S26 with a build for its Snapdragon 8 Elite Gen 5, SM8850.)
 - **A computer with adb** to copy the model (step 3), or a direct download link to the model (step 3, option C).
 
 ## 1. Install the APK
 
 **On the phone (main way)**
-1. Get `litert_hackathon-v0.1.2-arm64.apk` onto the phone: download it from the link you received, or copy it over USB
-   into *Downloads*.
+1. Get `litert_hackathon-v0.1.2-arm64.apk` onto the phone: download it on the phone from the
+   [v0.1.2 release](https://github.com/DenisovAV/litert-edge-demos/releases/tag/v0.1.2) (577 MB), or copy it over
+   USB into *Downloads*. Direct link:
+   `https://github.com/DenisovAV/litert-edge-demos/releases/download/v0.1.2/litert_hackathon-v0.1.2-arm64.apk`
 2. Open it from **My Files → Downloads** (or from the browser's downloads).
 3. Android asks to allow installing apps from this source: tap **Settings**, turn on **Allow from this source**, go
    back, tap **Install**.
@@ -60,18 +64,19 @@ unreadable for the app.
 
 **A. Into the app's models folder (recommended)**
 ```sh
-adb push gemma4_2b_SM8850.litertlm /sdcard/Android/data/dev.fluttergemma.litert_hackathon/files/models/
+adb push gemma-4-E2B-it.litertlm /sdcard/Android/data/dev.fluttergemma.litert_hackathon/files/models/
 ```
 
 **B. Into the shared folder (if A says "cannot be read")**
 ```sh
 adb shell mkdir -p /data/local/tmp/litert-models
-adb push gemma4_2b_SM8850.litertlm /data/local/tmp/litert-models/
+adb push gemma-4-E2B-it.litertlm /data/local/tmp/litert-models/
 ```
 The app looks in both folders. Copying 2.6 GB takes a minute or two over USB.
 
 **C. Without a computer:** in the app, **Download from URL…** with a direct link to the `.litertlm` file (stay on
-Wi-Fi; a dropped download resumes).
+Wi-Fi; a dropped download resumes). For Gemma 4 E2B:
+`https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm/resolve/main/gemma-4-E2B-it.litertlm`
 
 ## 4. Choose the model in the app
 
