@@ -190,7 +190,7 @@ selectRaw(raw: Float32List[8400*84], thr = 0.25, maxDet = 100) -> List<Det>
 | `ai-edge-litert` 2.2.0 (Metal) | throws ("415 ops on GPU, 46 on CPU") | builds, 415/461 on GPU, 4.05 ms | builds, fully accelerated, 3.2–3.5 ms |
 | `ai-edge-litert` 2.1.5 (Metal) = `flutter_litert` macOS | throws (54 on GPU) | 54/461 on GPU | builds, fully accelerated (after ADD v1), 3.2–3.7 ms |
 | `flutter_litert` 3.9.3 macOS (measured) | **throws** 504 | builds, 21.6 ms (= CPU speed) | **builds, `isFullyAccelerated` true, 4.1 ms** |
-| `flutter_litert` iOS (LiteRT `litert-ios-v1.0.1`) | expected to throw — **unverified** | **unverified** | expected to build — **unverified (Inc 2)** |
+| `flutter_litert` iOS (LiteRT `litert-ios-v1.0.1`) | expected to throw — **unverified** | **unverified** | iOS 26.5 simulator, 2026-10-08: throws 504 (expected: flutter_litert's Metal accelerator cannot register next to LiteRT-LM's, [upstream-issues.md](../upstream-issues.md)). **CPU** builds: verify 2.4e-6 of range, cats box 0.04 px, 25 ms (`integration_test/detector_bundled_test.dart`). iPhone 17 Pro (iOS 26.5.2, release, 2026-10-08): GPU throws 504 the same way; **CPU runs Demo 3** (switched in the app, boxes live) |
 | `flutter_litert` Android (LiteRT 2.2.0 OpenCL/GL) | throws (int64/GatherND are GPU-unsupported in ML Drift) — expected | partial — expected | **unverified**. Risk ops: BATCH_MATMUL (4, attention), 3-D TRANSPOSE and SLICE, RESIZE_NEAREST v3. Check on the first Android device. |
 
 ### 4.2 What `flutter_litert` 3.9.3 reports (read from `compiled_model_native.dart`)

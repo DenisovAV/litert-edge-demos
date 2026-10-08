@@ -34,8 +34,10 @@ real Android device run, iOS signing (its entitlements and a real iPhone run) an
 | NPU | the chosen `.litertlm` on `PreferredBackend.npu`, exactly as requested (no fallback) | **Android Qualcomm:** works via `flutter_edge_ai`. **Linux Qualcomm:** verified outside the app on Arduino VENTUNO Q (QCS8275, Hexagon V75) with LiteRT-LM 0.18.0, a self-built `libLiteRtDispatch_Qualcomm.so` and QAIRT ≥ 2.50; not yet in `flutter_edge_ai`, whose `npuDispatchShipsFor` returns false on Linux. NPU builds are compiled per SoC |
 
 `flutter_litert` and the LiteRT-LM native bundle (`flutter_edge_ai_litertlm`) both carry LiteRT: two dynamic copies
-coexist (verified on iOS sim + macOS in `~/Work/litert_demo`); never static-link both. Real-device coexistence is not
-yet verified — do it early.
+coexist (verified on iOS sim + macOS in `~/Work/litert_demo`); never static-link both. **Real iPhone (2026-10-08):** both
+ship `LiteRtMetalAccelerator.framework`, the app keeps LiteRT-LM's, so flutter_litert's GPU fails on iOS — the
+detector's standard backend there is the CPU until `flutter_edge_ai_litertlm` renames its copy
+([docs/upstream-issues.md](docs/upstream-issues.md)).
 
 ## Code conventions (as practised)
 

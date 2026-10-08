@@ -123,7 +123,7 @@ final class AppDependencies {
     Future<Directory> Function()? modelStoreRoot,
     ModelFilePicker picker = const FileSelectorModelFilePicker(),
     NativeLogTap? logTap,
-    SelfTestOptions selfTestOptions = const SelfTestOptions(),
+    SelfTestOptions? selfTestOptions,
   }) async {
     // A bad VOICE_GATE_DBFS or GEMMA_ACTIVATION fails startup here, visibly,
     // not on first use.
@@ -194,7 +194,10 @@ final class AppDependencies {
       chatModelSwitcher: chatModelSwitcher,
       nativeLog: nativeLog,
       store: services.store,
-      selfTestOptions: selfTestOptions,
+      // The in-app self-test loads the detector where the app does.
+      selfTestOptions:
+          selfTestOptions ??
+          SelfTestOptions(detectorBackend: standardDetectorBackend()),
       arbiter: arbiter,
     );
   }

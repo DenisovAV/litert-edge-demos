@@ -56,10 +56,13 @@ void main() {
     ImportSupport support = const ImportFromFolder(),
     String gemmaModelPath = '',
     bool prepare = true,
+    Future<void> Function(TypedSettings settings)? seed,
   }) async {
     store = ModelStore(root: () async => root);
+    final settings = TypedSettings(store: InMemorySettingsStore());
+    await seed?.call(settings);
     chatModels = ChatModelRepository(
-      settings: TypedSettings(store: InMemorySettingsStore()),
+      settings: settings,
       store: store,
       npu: () => npu,
       folders: [
@@ -482,6 +485,179 @@ void main() {
       expect(llm.models.last.llm.backend, PreferredBackend.npu);
     },
   );
+
+  group('nothing chosen and one file already in the models folder', () {
+    late List<int> npuFile;
+
+    setUp(() {
+      final header = File(
+        'test_assets/litertlm/gemma4_2b_sm8850_npu.header.bin',
+      ).readAsBytesSync();
+      npuFile = [...header, ...bytes];
+    });
+
+    File putInFolder(String name) {
+      final folder = Directory('${root.path}/models_folder')
+        ..createSync(recursive: true);
+      return File('${folder.path}/$name')..writeAsBytesSync(npuFile);
+    }
+
+    test('it is selected at start with its own settings; nothing loads '
+        'before Use this model', () async {
+      final file = putInFolder('gemma4_2b_SM8850.litertlm');
+      await build(npu: const NpuAvailable(soc: 'QTI SM8850'));
+      await listed();
+
+      expect(vm.useLocal.completed, isTrue, reason: '${vm.localError}');
+      expect(vm.isSelected(vm.localFiles.single), isTrue);
+      expect(vm.fileLine, contains('in place: ${file.path}'));
+      expect(vm.draftBackend, PreferredBackend.npu);
+      expect(vm.draftContext, '4096');
+      expect(vm.active, ChatModelKind.none, reason: 'selected, not switched');
+      expect(vm.canApply, isTrue);
+      expect(llm.models, isEmpty, reason: 'loading waits for the tester');
+
+      await vm.apply.execute();
+      expect(vm.apply.completed, isTrue, reason: '${vm.apply.result}');
+      expect(llm.installs.last, file.path);
+    });
+
+    test('a file added later is selected by Rescan', () async {
+      await build();
+      await listed();
+      expect(vm.saved, isNull);
+
+      final file = putInFolder('gemma4_2b_SM8850.litertlm');
+      await vm.rescan.execute();
+
+      expect(vm.fileLine, contains('in place: ${file.path}'));
+    });
+
+    test('two files: none is selected, the tester picks', () async {
+      putInFolder('a.litertlm');
+      putInFolder('b.litertlm');
+      await build();
+      await listed();
+
+      expect(vm.localFiles, hasLength(2));
+      expect(vm.saved, isNull);
+      expect(vm.useLocal.result, isNull, reason: 'never tried');
+    });
+
+    test('a developer define (GEMMA_MODEL_PATH) keeps its model', () async {
+      putInFolder('gemma4_2b_SM8850.litertlm');
+      await build(gemmaModelPath: pick('define.litertlm'), prepare: false);
+      await listed();
+
+      expect(vm.saved, isNull);
+      expect(vm.useLocal.result, isNull);
+    });
+
+    test('selected mid-copy: the row can be picked again, and Rescan after '
+        'the copy picks it at its full size', () async {
+      final folder = Directory('${root.path}/models_folder')
+        ..createSync(recursive: true);
+      final file = File('${folder.path}/gemma4_2b_SM8850.litertlm')
+        ..writeAsBytesSync(npuFile.sublist(0, npuFile.length ~/ 2));
+      await build(npu: const NpuAvailable(soc: 'QTI SM8850'));
+      await listed();
+      expect(vm.saved?.file?.sizeBytes, npuFile.length ~/ 2);
+
+      file.writeAsBytesSync(npuFile);
+      await vm.rescan.execute();
+
+      expect(vm.saved?.file?.sizeBytes, npuFile.length);
+      expect(vm.isSelected(vm.localFiles.single), isTrue);
+      expect(vm.canPick(vm.localFiles.single), isFalse, reason: 'same size');
+      expect(vm.canApply, isTrue, reason: '${vm.draftProblem}');
+    });
+
+    test('Rescan while a download runs selects nothing: the download keeps '
+        'its own settings', () async {
+      await build(npu: const NpuAvailable(soc: 'QTI SM8850'));
+      await listed();
+      server.files[fileName] = ServedFile(
+        bytes,
+        chunkDelay: const Duration(milliseconds: 40),
+        chunkBytes: 4096,
+      );
+      final request = switch (ModelUrlRequest.parse(
+        '${server.url(fileName)}',
+        '',
+        '',
+      )) {
+        Ok(:final value) => value,
+        final other => throw StateError('$other'),
+      };
+      final downloading = vm.download.execute(request);
+      await untilNotified(
+        chatModels.busy,
+        () => chatModels.busy.value,
+        what: 'the download to start',
+      );
+
+      putInFolder('gemma4_2b_SM8850.litertlm');
+      await vm.rescan.execute();
+      expect(vm.useLocal.result, isNull, reason: 'not while downloading');
+
+      await downloading;
+      expect(vm.download.completed, isTrue, reason: '${vm.transferError}');
+      expect(vm.saved?.file?.name, fileName);
+      expect(vm.saved?.maxTokens, 1280, reason: 'from its own name');
+    });
+
+    test('a saved choice that cannot load (blocked) is not replaced, and '
+        'nothing loads by itself', () async {
+      putInFolder('gemma4_2b_SM8850.litertlm');
+      await build(
+        prepare: false,
+        seed: (settings) => settings.write(Settings.chatModel, 'custom'),
+      );
+      await listed();
+
+      expect(vm.saved, isNull);
+      expect(vm.useLocal.result, isNull);
+      expect(llm.installs, isEmpty);
+    });
+
+    test('unreadable saved settings: the problem stays to be read', () async {
+      putInFolder('gemma4_2b_SM8850.litertlm');
+      await build(
+        prepare: false,
+        seed: (settings) =>
+            settings.write(Settings.customChatModel, '{not json'),
+      );
+      await listed();
+
+      expect(vm.problem, isNotNull);
+      expect(vm.useLocal.result, isNull);
+    });
+
+    test('the only file cannot be used: its reason shows, nothing is '
+        'selected', () async {
+      final folder = Directory('${root.path}/models_folder')
+        ..createSync(recursive: true);
+      File('${folder.path}/notes.litertlm').writeAsStringSync('hello');
+      await build();
+      await listed();
+
+      expect(vm.localError, contains('not a .litertlm'));
+      expect(vm.saved, isNull);
+    });
+
+    test('a model chosen before stays chosen', () async {
+      await build();
+      picker.modelFile = pick();
+      await vm.importFile.execute();
+      expect(vm.importFile.completed, isTrue);
+
+      putInFolder('gemma4_2b_SM8850.litertlm');
+      await vm.rescan.execute();
+
+      expect(vm.fileLine, contains(fileName));
+      expect(vm.useLocal.result, isNull);
+    });
+  });
 
   test('a path that is not a .litertlm is refused with the reason', () async {
     await build();

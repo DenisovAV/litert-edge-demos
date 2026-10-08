@@ -21,10 +21,12 @@ void main() {
   LiveCameraSettingsRepository repo({
     Result<FrameSourceSpec> environment = _userChoice,
     String backendDefine = '',
+    DetectorBackend? standardBackend,
   }) => LiveCameraSettingsRepository(
     settings: TypedSettings(store: store),
     environment: environment,
     backendDefine: backendDefine,
+    standardBackend: standardBackend,
   );
 
   group('camera source', () {
@@ -174,6 +176,30 @@ void main() {
           (await repo().readBackend() as Ok<DetectorBackendChoice>).value;
       expect(choice.backend, DetectorBackend.gpu);
       expect(choice.source, DetectorChoiceSource.standard);
+    });
+
+    test('nothing saved where the standard is the CPU (iOS): the CPU, as '
+        'the standard; a saved GPU and the define still win', () async {
+      final ios = repo(standardBackend: DetectorBackend.cpu);
+      final standard =
+          (await ios.readBackend() as Ok<DetectorBackendChoice>).value;
+      expect(standard.backend, DetectorBackend.cpu);
+      expect(standard.source, DetectorChoiceSource.standard);
+
+      await ios.saveBackend(DetectorBackend.gpu);
+      final saved =
+          (await ios.readBackend() as Ok<DetectorBackendChoice>).value;
+      expect(saved.backend, DetectorBackend.gpu);
+      expect(saved.source, DetectorChoiceSource.setting);
+
+      final defined = repo(
+        backendDefine: 'gpu',
+        standardBackend: DetectorBackend.cpu,
+      );
+      expect(
+        (await defined.readBackend() as Ok<DetectorBackendChoice>).value.source,
+        DetectorChoiceSource.define,
+      );
     });
 
     test('the saved choice persists', () async {

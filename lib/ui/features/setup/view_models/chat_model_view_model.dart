@@ -133,7 +133,8 @@ class ChatModelViewModel extends ChangeNotifier {
   /// typed in "Path…".
   late final Command1<CustomChatModel, String> useLocal;
 
-  /// Lists the models folder again.
+  /// Lists the models folder again; with nothing chosen, selects the only
+  /// file found.
   late final Command0<void> rescan;
 
   List<Command<Object?>> get _commands => [
@@ -235,6 +236,12 @@ class ChatModelViewModel extends ChangeNotifier {
     LocalModelSource(:final path) => path == entry.path,
     _ => false,
   };
+
+  /// [entry] can be picked: another file than the selected one, or the
+  /// selected one at another size than when it was chosen (chosen while it
+  /// was still being copied).
+  bool canPick(LocalModelEntry entry) =>
+      !isSelected(entry) || entry.sizeBytes != saved?.file?.sizeBytes;
 
   /// `2.59 GB · 2026-10-06 21:42`.
   static String entryLine(LocalModelEntry e) {
@@ -568,7 +575,30 @@ class ChatModelViewModel extends ChangeNotifier {
         ),
     ]);
     _notify();
+    await _selectTheOnlyFile();
     return const Result.ok(null);
+  }
+
+  /// Nothing chosen yet (no saved model, no developer define, nothing said
+  /// once still to read) and exactly one `.litertlm` in the models folders:
+  /// it is selected as if tapped, so the card opens on its settings. Loading
+  /// still waits for "Use this model"; a file that cannot be used shows its
+  /// reason like a tapped one. A selection made mid-copy (not applied yet) is
+  /// made again once the file's size changed. Never while an import or a
+  /// download runs: its own file is about to be adopted.
+  Future<void> _selectTheOnlyFile() async {
+    if (importFile.running || download.running || _chatModels.busy.value) {
+      return;
+    }
+    if (problem != null || note != null) return;
+    final files = localFiles;
+    if (files.length != 1) return;
+    final only = files.single;
+    final fresh = saved == null && _planned is NoChatSource;
+    final copiedSince =
+        active == ChatModelKind.none && isSelected(only) && canPick(only);
+    if (!fresh && !copiedSince) return;
+    await useLocal.execute(only.path);
   }
 
   Future<Result<CustomChatModel>> _download(ModelUrlRequest request) async {

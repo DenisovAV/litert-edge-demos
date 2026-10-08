@@ -29,8 +29,12 @@ flutter_litert's own `libLiteRt.so` (2.2.0) already uses the new ABI.
 - **One LiteRT on Linux: flutter_gemma's.** It exists for x86_64 and arm64 and needs glibc 2.35 (Ubuntu 22.04+,
   JetPack 6). The patched flutter_litert no longer bundles its own `libLiteRt.so` or WebGPU accelerator on Linux,
   and bundles the TFLite C library only on x86_64.
-- **ABI by library, not by platform.** `_hasEnvironmentModelAbi(dylib)` is true on Android or when the library
-  exports `LiteRtCreateModelFromFd` (introduced in 2.1.6 together with the environment argument).
+- **ABI by library, not by platform (desktop).** `_hasEnvironmentModelAbi(dylib)` is true on Android, or, except on
+  iOS, when the library exports `LiteRtCreateModelFromFd` (absent from 2.1.5). That symbol is not proof of the new
+  ABI everywhere: flutter_litert's iOS runtime (`litert-ios-v1.0.1`) exports it while its loaders still take
+  `(buffer, size, model)`, so iOS keeps the legacy ABI. Until 2026-10-08 the rule applied on iOS too, and every iOS
+  detector load failed with `LiteRtStatus=501 (kLiteRtStatusErrorInvalidFlatbuffer)`: the environment pointer was
+  read as the model buffer.
 - **How the patch is carried:** `tool/flutter_litert/flutter_litert-3.9.3.patch` (2 files, ~60 lines);
   `tool/flutter_litert/vendor.sh` builds `third_party/flutter_litert` (gitignored) from the pub.dev package plus the
   patch, and `pubspec.yaml` points `dependency_overrides` there. Run the script once per checkout and in CI, before

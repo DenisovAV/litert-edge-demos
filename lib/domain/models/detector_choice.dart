@@ -10,7 +10,8 @@ enum DetectorChoiceSource {
   /// Demo 3's Detector setting.
   setting,
 
-  /// Nothing chosen: the GPU.
+  /// Nothing chosen: the platform's standard backend (the GPU; the CPU on
+  /// iOS, see `standardDetectorBackend`).
   standard,
 }
 
@@ -42,11 +43,12 @@ final class InvalidDetectorSettingException implements Exception {
 }
 
 /// The precedence rule: a non-empty [define] wins, then the [saved] setting
-/// (`gpu` / `cpu`), then the GPU. Never guesses: a bad define or a bad saved
-/// value is an error.
+/// (`gpu` / `cpu`), then [standard]. Never guesses: a bad define or a bad
+/// saved value is an error.
 Result<DetectorBackendChoice> resolveDetectorBackend({
   required String define,
   String? saved,
+  DetectorBackend standard = DetectorBackend.gpu,
 }) {
   if (define.trim().isNotEmpty) {
     return switch (DetectorBackend.tryParse(define)) {
@@ -75,9 +77,9 @@ Result<DetectorBackendChoice> resolveDetectorBackend({
       ),
     };
   }
-  return const Result.ok(
+  return Result.ok(
     DetectorBackendChoice(
-      backend: DetectorBackend.gpu,
+      backend: standard,
       source: DetectorChoiceSource.standard,
     ),
   );

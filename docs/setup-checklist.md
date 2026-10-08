@@ -58,8 +58,13 @@ fallback, expects "Paris".
   plain `use_frameworks!` (no `:linkage => :static`). Unsigned device build (`flutter build ios --no-codesign`) is
   green; LiteRT copies are separate dynamic frameworks (`LiteRt`, `LiteRtLm`, `LiteRtMetalAccelerator` from
   flutter_gemma; `TensorFlowLiteC*`, `flutter-litert` from flutter_litert).
-- [ ] Verify on a real iPhone — blocked on signing (above). Interim evidence: iOS 26.5 simulator smoke test passes
-  (CPU, load 4.7 s, "Paris").
+- [ ] Verify on a real iPhone — partly done 2026-10-08 on an iPhone 17 Pro (iOS 26.5.2): a release build signed by
+  hand with another team's wildcard development profile, so **without** the two memory entitlements (a wildcard App
+  ID cannot carry them). Gemma 4 E2B loads and answers on the GPU (Metal, load 3.5 s), the knowledge base, STT and TTS
+  load, and the detector runs on the CPU; its GPU fails (the `LiteRtMetalAccelerator.framework` collision,
+  [upstream-issues.md](upstream-issues.md)). One reply failed once with `LiteRtRunCompiledModel … (status=3)` right
+  after a `Received memory warning`: not reproduced since. Still open: a build signed for team `6ZHF6A3G28` with the
+  entitlements (needs an Apple account in Xcode), then a full run.
 - [ ] **New: effective iOS floor is 26.** `flutter_inappwebview_ios` built with the Xcode 26.5 SDK strongly links
   `/usr/lib/swift/libswiftWebKit.dylib`, so on iOS 18.5 the app aborts in dyld before `main` (reproduced on the
   simulator; the device build has the same link). Decide: accept iOS 26+ demo devices, or apply the weak-link

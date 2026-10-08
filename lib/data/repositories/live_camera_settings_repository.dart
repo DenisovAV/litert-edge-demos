@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../config/env.dart';
+import '../../config/live_camera_config.dart' show standardDetectorBackend;
 import '../../domain/models/camera_source.dart';
 import '../../domain/models/detection.dart';
 import '../../domain/models/detector_choice.dart';
@@ -30,7 +31,8 @@ class LiveCameraSettingsRepository {
     required this._settings,
     required this._environment,
     this._backendDefine = kDetectorBackend,
-  });
+    DetectorBackend? standardBackend,
+  }) : _standardBackend = standardBackend ?? standardDetectorBackend();
 
   final TypedSettings _settings;
 
@@ -38,6 +40,9 @@ class LiveCameraSettingsRepository {
   /// leaves the choice to the user.
   final Result<FrameSourceSpec> _environment;
   final String _backendDefine;
+
+  /// The backend with nothing chosen ([standardDetectorBackend]).
+  final DetectorBackend _standardBackend;
 
   /// What fixed the camera source, for the screen (`FRAME_SOURCE=fixture`);
   /// null when the user chooses it.
@@ -132,13 +137,17 @@ class LiveCameraSettingsRepository {
   }
 
   /// The backend the next detector load uses: the define, else the saved
-  /// setting, else the GPU ([resolveDetectorBackend]).
+  /// setting, else the platform's standard ([resolveDetectorBackend]).
   Future<Result<DetectorBackendChoice>> readBackend() async {
     if (_backendDefine.trim().isNotEmpty) {
       return resolveDetectorBackend(define: _backendDefine);
     }
     return switch (await _settings.read(Settings.detectorBackend)) {
-      Ok(:final value) => resolveDetectorBackend(define: '', saved: value),
+      Ok(:final value) => resolveDetectorBackend(
+        define: '',
+        saved: value,
+        standard: _standardBackend,
+      ),
       Error(:final error) => Result.error(
         InvalidDetectorSettingException(
           'Could not read the detector setting: $error',

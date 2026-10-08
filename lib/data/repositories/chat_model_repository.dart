@@ -208,7 +208,18 @@ class ChatModelRepository implements ChatModelPlanner {
       source: LocalModelSource(:final path),
       :final file?,
     )) {
-      _localProblem = await _checkLocal(path, file);
+      final found = await _foundInFolders(path, file);
+      if (found != null) {
+        custom = custom.copyWith(source: LocalModelSource(found));
+        debugPrint('[ChatModel] $path is gone; the same file is at $found');
+        if (_persistMigration) {
+          await _settings.write(
+            Settings.customChatModel,
+            CustomChatModelCodec.encode(custom),
+          );
+        }
+      }
+      _localProblem = await _checkLocal(found ?? path, file);
     } else if (custom?.file case final file?) {
       if (await _store.useCustomFile(file) case Error(:final error)) {
         problems.add('its file could not be checked ($error)');
@@ -461,6 +472,27 @@ class ChatModelRepository implements ChatModelPlanner {
       Error(:final error) =>
         '$error Pick the file again, or choose another .litertlm.',
     };
+  }
+
+  /// [path] (a saved file in place) when it is gone and exactly one file of
+  /// its name and size is in the models folders: that file. iOS moves the
+  /// app's folders when the app is reinstalled, so the saved absolute path
+  /// goes stale while the file stayed in the app's models folder.
+  Future<String?> _foundInFolders(String path, CustomModelFile file) async {
+    try {
+      _length(path);
+      return null;
+    } on FileSystemException catch (e) {
+      if (!isNotFound(e)) return null;
+    }
+    final matches = [
+      for (final folder in _folders)
+        if (await folder.list() case Ok(:final value))
+          for (final entry in value)
+            if (entry.name == file.name && entry.sizeBytes == file.sizeBytes)
+              entry.path,
+    ];
+    return matches.length == 1 ? matches.single : null;
   }
 
   /// The cheap part of [_checkLocal] (the file's length), for [plan]. Not

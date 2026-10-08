@@ -34,6 +34,7 @@ needed), or use your own `.litertlm`.
 | Raspberry Pi 5 (8/16 GB) | `litert_hackathon-v0.1.2-linux-arm64.tar.gz` | [docs/raspberry-pi.md](docs/raspberry-pi.md) |
 | NVIDIA Jetson Orin (JetPack 6) | `litert_hackathon-v0.1.2-linux-arm64.tar.gz` | [docs/jetson.md](docs/jetson.md) |
 | Linux PC (x64, Ubuntu 22.04+, Vulkan GPU) | `litert_hackathon-v0.1.2-linux-x64.tar.gz` | [docs/testers.md](docs/testers.md) |
+| iPhone (iOS 26+, 8 GB RAM) | built from source with your Apple account | [docs/ios-install.md](docs/ios-install.md) |
 
 One arm64 package serves all three boards; only the backend differs (GPU through Vulkan or the CPU; the Qualcomm NPU
 on Android today, on Linux in progress). Every guide ends with `./run.sh --selftest` (or the in-app self-test), whose
@@ -90,6 +91,8 @@ tool/linux/package.sh                     # bundle + run.sh + guides + licences,
 
 Board guides: [Raspberry Pi 5](docs/raspberry-pi.md), [NVIDIA Jetson](docs/jetson.md) (and
 [jetson-check.md](docs/jetson-check.md)).
+
+iPhone: build and sign it yourself, step by step in [docs/ios-install.md](docs/ios-install.md).
 
 iPhone and Android: install once, open the app, put a chat model (`.litertlm`) into its models folder and choose it
 on the Chat model card ([docs/android-install.md](docs/android-install.md)). Every model but the chat model is built

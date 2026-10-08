@@ -7,34 +7,40 @@ linux/CMakeLists.txt (why: docs/design/detector-linux.md).
 
 --- a/lib/src/bindings/litert_ffi.dart
 +++ b/lib/src/bindings/litert_ffi.dart
-@@ -96,6 +96,12 @@
+@@ -96,6 +96,18 @@
  
  typedef LiteRtOpaquePayloadDeleterNative = Void Function(Pointer<Void>);
  
 +/// Whether [dylib] takes an environment as the first model-loading argument.
-+/// `LiteRtCreateModelFromFd` arrived in the same LiteRT release (2.1.6) and is
-+/// absent from 2.1.5, so its presence identifies the newer ABI.
++/// `LiteRtCreateModelFromFd` is absent from the 2.1.5 dylib and present in the
++/// newer runtimes (flutter_gemma's libLiteRt.so on Linux), so on desktop its
++/// presence identifies the newer ABI. Not on iOS: the runtime this plugin
++/// loads there (`litert-ios-v1.0.1`) exports it, yet its model loaders take
++/// no environment (`LiteRtCreateModelFromBuffer(buffer, size, model)`), and
++/// passing one first fails every model with
++/// kLiteRtStatusErrorInvalidFlatbuffer.
 +bool _hasEnvironmentModelAbi(DynamicLibrary dylib) =>
-+    Platform.isAndroid || dylib.providesSymbol('LiteRtCreateModelFromFd');
++    Platform.isAndroid ||
++    (!Platform.isIOS && dylib.providesSymbol('LiteRtCreateModelFromFd'));
 +
  int Function(Pointer<Void>, Pointer<Utf8>, Pointer<Pointer<Void>>)
  _bindCreateModelFromFile(DynamicLibrary dylib) {
    // LiteRT 2.1.6 added an environment as the first model-loading argument but
-@@ -103,7 +109,12 @@
+@@ -103,7 +115,12 @@
    // pinned to 2.2.0; the currently bundled Apple/desktop runtimes retain the
    // legacy ABI. Present one environment-aware Dart signature to the caller and
    // adapt only at this binding boundary.
 -  if (Platform.isAndroid) {
 +  //
-+  // litert_hackathon patch: decide from the loaded library, not the platform.
-+  // On Linux the app runs on flutter_gemma's newer libLiteRt.so (same file
-+  // name, it overwrites this plugin's copy in bundle/lib), and calling it with
-+  // the legacy signature shifts every argument and crashes.
++  // litert_hackathon patch: on desktop, decide from the loaded library, not
++  // the platform. On Linux the app runs on flutter_gemma's newer libLiteRt.so
++  // (same file name, it overwrites this plugin's copy in bundle/lib), and
++  // calling it with the legacy signature shifts every argument and crashes.
 +  if (_hasEnvironmentModelAbi(dylib)) {
      return dylib.lookupFunction<
        Int32 Function(Pointer<Void>, Pointer<Utf8>, Pointer<Pointer<Void>>),
        int Function(Pointer<Void>, Pointer<Utf8>, Pointer<Pointer<Void>>)
-@@ -119,7 +130,7 @@
+@@ -119,7 +136,7 @@
  
  int Function(Pointer<Void>, Pointer<Void>, int, Pointer<Pointer<Void>>)
  _bindCreateModelFromBuffer(DynamicLibrary dylib) {

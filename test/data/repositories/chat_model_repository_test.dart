@@ -188,6 +188,68 @@ void main() {
       expect(plan.config.llm.backend, PreferredBackend.npu);
     });
 
+    group('the saved file is gone from its path', () {
+      Future<File> chosenThenMoved({required List<String> into}) async {
+        final repo = newRepo();
+        await repo.load();
+        final file = inPlace('gemma-4-E2B-it.litertlm', gpuHeader);
+        await repo.useLocalFile(file.path);
+        await hashed(repo);
+        expect(await repo.apply(repo.state.value.custom!), isA<Ok<void>>());
+        File? last;
+        for (final dir in into) {
+          Directory(dir).createSync(recursive: true);
+          last = file.copySync('$dir/gemma-4-E2B-it.litertlm');
+        }
+        file.deleteSync();
+        return last!;
+      }
+
+      test(
+        'the same name and size in a models folder (iOS gives a '
+        'reinstalled app a new folder path): used there, and saved',
+        () async {
+          final moved = await chosenThenMoved(into: ['${root.path}/m']);
+
+          final relaunched = newRepo();
+          expect(await relaunched.load(), isA<Ok<void>>());
+
+          expect((relaunched.plan as CustomChatPlan).path, moved.path);
+          final stored = CustomChatModelCodec.decode(
+            prefs.values[Settings.customChatModel.key]! as String,
+          );
+          expect((stored.source as LocalModelSource).path, moved.path);
+        },
+      );
+
+      test('two candidates (both folders): none is guessed', () async {
+        await chosenThenMoved(
+          into: ['${root.path}/m', '${root.path}/tmp-models'],
+        );
+
+        final relaunched = newRepo();
+        await relaunched.load();
+
+        expect(
+          (relaunched.plan as ChatPlanBlocked).reason,
+          contains('is not there any more'),
+        );
+      });
+
+      test('the same name at another size is another file', () async {
+        final moved = await chosenThenMoved(into: ['${root.path}/m']);
+        moved.writeAsBytesSync([...moved.readAsBytesSync(), 0]);
+
+        final relaunched = newRepo();
+        await relaunched.load();
+
+        expect(
+          (relaunched.plan as ChatPlanBlocked).reason,
+          contains('is not there any more'),
+        );
+      });
+    });
+
     test(
       'a GPU file with a vision section defaults images on and the GPU',
       () async {

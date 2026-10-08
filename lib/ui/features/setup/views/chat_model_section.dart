@@ -272,7 +272,9 @@ class _FileRow extends StatelessWidget {
       subtitle: Text(ChatModelViewModel.entryLine(entry)),
       selected: selected,
       enabled: !vm.busy,
-      onTap: selected ? null : () => unawaited(vm.useLocal.execute(entry.path)),
+      onTap: vm.canPick(entry)
+          ? () => unawaited(vm.useLocal.execute(entry.path))
+          : null,
     );
   }
 

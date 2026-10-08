@@ -1,13 +1,26 @@
 /// Demo 3 live-detection settings (design demo3 §3.1, §5). Tune here.
 library;
 
+import 'dart:io' show Platform;
+
 import 'package:camera/camera.dart' show ResolutionPreset;
 
 import '../domain/models/camera_source.dart';
+import '../domain/models/detection.dart' show DetectorBackend;
 import '../domain/models/frame_source_spec.dart';
 import '../domain/models/live_state.dart';
 import '../utils/result.dart';
 import 'env.dart';
+
+/// Where the detector runs when nothing chose it (no `DETECTOR_BACKEND`, no
+/// saved setting): the GPU, except on iOS, where it is the CPU. There the
+/// detector's LiteRT (flutter_litert) and the chat model's LiteRT-LM both
+/// ship a `LiteRtMetalAccelerator.framework`; the app keeps one, LiteRT-LM's,
+/// which the detector's runtime cannot register, so its GPU load always fails
+/// (docs/upstream-issues.md). GPU chosen in Demo 3's settings is still tried
+/// and still fails visibly.
+DetectorBackend standardDetectorBackend() =>
+    Platform.isIOS ? DetectorBackend.cpu : DetectorBackend.gpu;
 
 /// Most frames per second sent to the detector (design C3).
 const kLiveDetectFps = 15;

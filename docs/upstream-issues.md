@@ -195,9 +195,13 @@ applied by `tool/flutter_litert/vendor.sh` (`dependency_overrides` → `third_pa
   flutter_litert's 2.1.5 copy). The legacy call then passes the buffer as the environment, and the process dies in
   `CompiledModel.fromBuffer`. Reproduced on macOS with `LITERT_LIB_PATH` pointed at flutter_gemma's
   `libLiteRtLm.dylib` (same LiteRT pin, exports the same C API): crash before `compiled_model.cc` logs anything; with
-  the patch the CPU output is bit-identical to 2.1.5 (sum 10824521.620584637). **Ask:** decide per library, e.g.
-  `dylib.providesSymbol('LiteRtCreateModelFromFd')`, which appeared in the same release (absent from the 2.1.5 dylib,
-  present in 2.1.6's header with the environment argument).
+  the patch the CPU output is bit-identical to 2.1.5 (sum 10824521.620584637). **Ask:** decide per library. Do not
+  use `LiteRtCreateModelFromFd` alone as the marker (our first patch did): flutter_litert's own iOS runtime
+  (`litert-ios-v1.0.1`) exports it, yet its `LiteRtCreateModelFromBuffer` takes `(buffer, size, model)` (arm64
+  disassembly, device and simulator slices), so an environment-first call fails every iOS model with
+  `kLiteRtStatusErrorInvalidFlatbuffer` (501). Our patch keeps the platform rule on iOS. In every binary we inspected,
+  `LiteRtCreateModelFromAllocation` tracks the environment ABI: present in Android 2.2.0 and the LiteRT-LM v0.17.1
+  bundle, absent from macOS 2.1.5 and `litert-ios-v1.0.1`.
 - **FL-2 Linux ships x86_64-only runtimes with a glibc 2.38 floor for the Interpreter.** `linux/lib/libLiteRt.so`
   (GLIBC_2.27) and the downloaded `libLiteRtWebGpuAccelerator.so` are x86_64 only; `libtensorflowlite_c-linux.so`
   needs GLIBC_2.38 (Ubuntu 24.04+) and has no arm64 build. `verifyCompiledModel` depends on that Interpreter, so on
@@ -221,3 +225,18 @@ applied by `tool/flutter_litert/vendor.sh` (`dependency_overrides` → `third_pa
 - **Ask:** persist the identity as one value (one JSON string under one key, written once), or write a version
   marker last and ignore a set whose marker does not match; the same applies to the TTS and embedding identities
   written the same way.
+
+## flutter_edge_ai_litertlm 1.9.0 + flutter_litert ≥ 3.4.0 on iOS: `LiteRtMetalAccelerator.framework` collides
+
+- **Packages:** `flutter_edge_ai_litertlm` 1.9.0 (Native Assets, `native-v0.17.1-a`) and `flutter_litert` 3.9.3
+  (SwiftPM, `litert-ios-v1.0.1`, LiteRT 2.1.5). Both ship a framework named `LiteRtMetalAccelerator.framework`.
+- **Effect (iPhone 17 Pro, iOS 26.5.2, 2026-10-08):** the app keeps one copy, LiteRT-LM's (Native Assets embed after
+  SwiftPM and overwrite it silently). Gemma runs on Metal; flutter_litert's runtime logs
+  `GPU accelerator could not be loaded and registered`, so every flutter_litert GPU model fails (our detector:
+  "failed on the GPU"). ~40 duplicate ObjC classes are reported between `LiteRtMetalAccelerator` and `LiteRt`.
+- **Why now:** flutter_litert 3.4.0 replaced its bare `libLiteRtMetalAccelerator.dylib` with a framework of the same
+  name as LiteRT-LM's (App Store ITMS-90426, its issue #15); `~/Work/litert_demo` (3.3.1, simulator, CPU) predates it.
+- **Workaround in this app:** the detector's standard backend on iOS is the CPU (`standardDetectorBackend()`).
+- **Ask:** ship LiteRT-LM's Metal accelerator under its own name (e.g. `LiteRtLmMetalAccelerator.framework`):
+  `hook/build.dart:241` companions, `native/litert_lm/patch_c_api.sh:339` (`FLUTTER_GEMMA_METAL_FW_PATH`), the native
+  release tarballs. Full brief: [handoff/flutter-edge-ai-ios-metal-accelerator-collision.md](handoff/flutter-edge-ai-ios-metal-accelerator-collision.md).
