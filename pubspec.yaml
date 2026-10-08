@@ -1,0 +1,144 @@
+name: litert_hackathon
+description: "On-device AI demos: a multimodal voice chat with skills and a live camera assistant, on LiteRT."
+publish_to: 'none'
+version: 0.1.2+3
+
+environment:
+  sdk: ^3.13.3
+
+dependencies:
+  audio_session: ^0.2.4
+  camera: ^0.12.1
+  # macOS (and Linux/Windows) camera_platform_interface implementation. Pinned:
+  # 2.0.0 is a week old with a single maintainer (design demo3 §11).
+  camera_desktop: 2.0.0
+  # Inc 5: the knowledge-base index hash (wiring §2.4); already resolved
+  # transitively.
+  crypto: ^3.0.7
+  # Phase A provisioning: the APFS clonefile call of a macOS/iOS model import
+  # (distribution.md); already resolved transitively.
+  ffi: ^2.2.0
+  # Phase A provisioning: "Import from folder…" (desktop) and file import
+  # (iOS). Not used on Android: file_selector_android reads a picked file
+  # into one Java byte[] (a 2.5 GB model overflows it).
+  file_selector: ^1.1.0
+  flutter:
+    sdk: flutter
+  flutter_edge_ai: ^2.1.0
+  flutter_edge_ai_agent: ^0.2.7
+  flutter_edge_ai_embeddings: ^2.2.2
+  flutter_edge_ai_litertlm: ^1.9.0
+  flutter_edge_ai_rag: ^1.0.0
+  flutter_edge_ai_speech: ^0.5.4
+  flutter_edge_ai_sqlite: ^2.0.0
+  flutter_litert: ^3.9.3
+  flutter_soloud: ^4.1.7
+  image_picker: ^1.2.3
+  # The built-in EmbeddingGemma on Android: a streaming copy out of the APK
+  # (AssetManager on Dispatchers.IO), once. Already in the app through
+  # flutter_edge_ai; a direct dependency because the app calls it.
+  large_file_handler: ^0.5.2
+  path_provider: ^2.1.6
+  provider: ^6.1.5+1
+  record: ^7.1.1
+  # Persisted settings (the chat model choice, Demo 3's camera and detector
+  # backend); already resolved transitively (flutter_edge_ai).
+  shared_preferences: ^2.5.5
+
+dev_dependencies:
+  # Tests build real CameraImage frames (CameraImageData is not re-exported by
+  # camera); already resolved transitively.
+  camera_platform_interface: ^2.14.0
+  # Inc 5 chunker test: token counts with EmbeddingGemma's own tokenizer
+  # (wiring §2.9); already resolved transitively. Skipped without the model.
+  dart_sentencepiece_tokenizer: 1.4.1
+  # Drives VoiceSession's drain timers in the voice assistant tests; already
+  # resolved transitively.
+  fake_async: ^1.3.3
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  # The image picker tests swap in a fake ImagePickerPlatform; already
+  # resolved transitively.
+  image_picker_platform_interface: ^2.11.1
+  integration_test:
+    sdk: flutter
+  # The settings test swaps in the in-memory SharedPreferencesAsync
+  # platform; already resolved transitively.
+  shared_preferences_platform_interface: ^2.4.2
+
+dependency_overrides:
+  # flutter_litert 3.9.3 + tool/flutter_litert/flutter_litert-3.9.3.patch, made
+  # by tool/flutter_litert/vendor.sh (run it once per checkout, before pub get).
+  # Without it the detector crashes on Linux: there it runs on the LiteRT-LM
+  # native bundle's newer libLiteRt.so (docs/design/detector-linux.md).
+  flutter_litert:
+    path: third_party/flutter_litert
+
+flutter:
+  uses-material-design: true
+  assets:
+    # Inc 3 voice-loop fixture: "What is the capital of France?" as 16 kHz
+    # mono PCM16 (docs/design/inc3-voice-wiring.md §7). 52 KB.
+    - test_assets/france_16k.pcm
+    # D3-3 camera question: "How many cats do you see?" as a 16 kHz mono
+    # PCM16 WAV (design demo3 §8: say + afconvert; 4096-byte header).
+    - test_assets/q_cats.wav
+    # D3-4 detailed questions (say + afconvert, same format): "Describe the
+    # scene.", "What does the sign say?", "Describe this scene in detail,
+    # please." (the barge-in turn). 37–76 KB each.
+    - test_assets/q_describe.wav
+    - test_assets/q_sign.wav
+    - test_assets/q_describe_detail.wav
+    # D3-4 synthetic sign, 1280×720 (tool/make_gate42_fixture.py). 14 KB.
+    - test_assets/gate42.png
+    # Inc 4 image-chat fixture: COCO 39769, two cats on a pink sofa
+    # (640×480 JPEG, 173 KB; inc4-5 §1.6). Also the self-test's detector
+    # golden image (lib/selftest/cats_golden.dart). Source: COCO 2017
+    # val 000000039769 (cocodataset.org), a Flickr photo under a Creative
+    # Commons licence; author and licence are listed in the COCO annotations.
+    - test_assets/cats.jpg
+    # Inc 5: the knowledge base, chunked and indexed at first launch (D10).
+    - assets/kb/
+    # The prebuilt index of assets/kb (tool/build_kb_index.sh): the sqlite-vec
+    # kb.db (3.6 MB, ~0.9 MB compressed) and its manifest. Installed on first
+    # launch when its key matches, instead of embedding 290 chunks on the
+    # device (216 s on a Galaxy S24's CPU; inc4-5 §2.4).
+    - assets/kb_index/
+    # Inc 5 retrieval golden set for integration_test/kb_retrieval_test.dart
+    # (19 on-topic, 12 off-topic questions). 4 KB.
+    - test_assets/kb_golden.json
+    # Inc 6: the seed skills, copied into the user-writable skills folder
+    # when absent (D12). One line per folder (flutter assets do not recurse);
+    # test/domain/skills/bundled_skills_test.dart checks every folder is here.
+    - assets/skills/device-info/
+    - assets/skills/current-time/
+    # Every assets/models/ file below is fetched by tool/fetch_models.sh
+    # (tool/models.lock): the models are not in git. "No file or variants
+    # found for asset: assets/models/…" means it has not run in this checkout.
+    #
+    # The built-in detector: YOLO26n raw-head (10 361 332 B, sha256
+    # 5ddd5eeb…ed80a), AGPL-3.0, derived by tool/prune_yolo26n_head.py from
+    # Arm/yolo26n-fp16-litert; loaded from memory (CompiledModel.fromBuffer).
+    # Licence: assets/models/NOTICE.md and the in-app licence page.
+    - assets/models/yolo26n_fp16_rawhead.tflite
+    # The built-in embedder: EmbeddingGemma-300M (179 132 472 B, sha256
+    # ad09e815…e121a) and its tokenizer (4 683 319 B, sha256 d6daa52d…438c7),
+    # Gemma Terms of Use, redistributed with the notice (NOTICE.md, the
+    # in-app licence page). Used in place on desktop/iOS; extracted once
+    # (verified) on Android.
+    - assets/models/embeddinggemma-300M_seq512_mixed-precision.tflite
+    - assets/models/sentencepiece.model
+    # The built-in speech models (no download; NOTICE.md, the in-app licence
+    # page), used and extracted like the embedder: Whisper base int8 and its
+    # tokenizer (77 012 960 + 2 480 466 B, Apache-2.0), moonshine-tiny f32
+    # and its tokenizer (109 373 140 + 1 985 534 B, MIT), and the Inflect-
+    # nano-v2 TTS bundle (six files, 35 710 101 B: its two models,
+    # Apache-2.0, and the four Matcha G2P files it reuses, MIT), laid out as
+    # installTts().fromFile reads it. Sizes and SHA-256 in
+    # lib/data/services/model_store/bundled_model_files.dart.
+    - assets/models/whisper_base_30s_i8.tflite
+    - assets/models/whisper_base_tokenizer.json
+    - assets/models/moonshine_tiny_5s_f32.tflite
+    - assets/models/moonshine_tiny_tokenizer.json
+    - assets/models/inflect/

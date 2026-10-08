@@ -1,0 +1,20 @@
+{
+  "format": "kb-prebuilt/1",
+  "key": {
+    "format": "kb-index/2",
+    "documents": "987e8d5ae18cc7542fd9494b929c25e1d53a528768c69a2aae7a7702ef90c478",
+    "chunker": "md-chunker-1/1400/300",
+    "documentPrefix": "title: none | text: ",
+    "modelId": "embeddinggemma-300M_seq512_mixed-precision",
+    "modelSha256": "ad09e81557203cb0e177abf9bf8727dfe138a7d394aa0f70f0b2ed16432e121a",
+    "tokenizerSha256": "d6daa52d93d7aad10e8388bd526c4e501d914b47177398d1d9621f1fe48438c7",
+    "dim": 768
+  },
+  "chunks": 290,
+  "dbBytes": 3620864,
+  "dbSha256": "98d28065c9dc7ad38ddbb11400697818f1627db312b0768c02698002997ac35a",
+  "store": "flutter_edge_ai_sqlite 2.0.0",
+  "embedderBackend": "cpu",
+  "builtOn": "macos",
+  "builtAt": "2026-10-06T22:36:37.500614Z"
+}

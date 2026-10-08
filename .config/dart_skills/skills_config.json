@@ -1,0 +1,59 @@
+{
+  "version": 2,
+  "installations": {
+    "claude": {
+      "package:flutter_gemma": {
+        "skills": [
+          {
+            "name": "flutter-gemma-builtin-ai",
+            "installedAt": "2026-10-01T14:04:56.054063Z",
+            "contentHash": "krLoNWhLqv/qO0BzrZeT/g==",
+            "path": "skills/flutter-gemma-builtin-ai"
+          },
+          {
+            "name": "flutter-gemma-diagnostics",
+            "installedAt": "2026-10-01T14:04:56.069647Z",
+            "contentHash": "uSI32eLjbA34WkjjusY7Dg==",
+            "path": "skills/flutter-gemma-diagnostics"
+          },
+          {
+            "name": "flutter-gemma-speech",
+            "installedAt": "2026-10-01T14:04:56.092651Z",
+            "contentHash": "Y1H+aXyiJzPQDBv8ZdAKeg==",
+            "path": "skills/flutter-gemma-speech"
+          },
+          {
+            "name": "flutter-gemma-function-calling",
+            "installedAt": "2026-10-01T14:04:56.100923Z",
+            "contentHash": "VQKcruhJ7k6IRHSbg6zdFQ==",
+            "path": "skills/flutter-gemma-function-calling"
+          },
+          {
+            "name": "flutter-gemma-rag",
+            "installedAt": "2026-10-01T14:04:56.107848Z",
+            "contentHash": "kCAbMOpSzUKhIhZXqTgCxA==",
+            "path": "skills/flutter-gemma-rag"
+          },
+          {
+            "name": "flutter-gemma-onnx",
+            "installedAt": "2026-10-01T14:04:56.114824Z",
+            "contentHash": "neccbw6fMOisfEIBs+evAw==",
+            "path": "skills/flutter-gemma-onnx"
+          },
+          {
+            "name": "flutter-gemma-inference",
+            "installedAt": "2026-10-01T14:04:56.125889Z",
+            "contentHash": "JLEelbH6cSKt5NROr8iwTg==",
+            "path": "skills/flutter-gemma-inference"
+          },
+          {
+            "name": "flutter-gemma-mediapipe",
+            "installedAt": "2026-10-01T14:04:56.134092Z",
+            "contentHash": "SQxX7au8NvPE9cDZVqCvnw==",
+            "path": "skills/flutter-gemma-mediapipe"
+          }
+        ]
+      }
+    }
+  }
+}
