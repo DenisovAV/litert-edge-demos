@@ -21,11 +21,11 @@ or a download link), for example the ungated
 (`gemma-4-E2B-it.litertlm` for the GPU or CPU, or a Qualcomm NPU build such as `gemma-4-E2B-it_qualcomm_sm8750.litertlm`
 for its chip). Its settings start from the file's header.
 
-## Download and install
+## Install guides
 
-Ready-made builds are on the [v0.1.2 release page](https://github.com/DenisovAV/litert-edge-demos/releases/tag/v0.1.2);
-the chat model comes from [litert-community/gemma-4-E2B-it-litert-lm](https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm)
-(no login needed).
+Build the app from source ([below](#building-from-source)); the chat model comes from
+[litert-community/gemma-4-E2B-it-litert-lm](https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm) (no login
+needed), or use your own `.litertlm`.
 
 | Device | Build | Guide |
 |---|---|---|

@@ -42,13 +42,11 @@ Adreno 623, GStreamer's camera plugin was there, and the JPEG library (libturboj
 
 ## 2. Install the app
 
-Download the Linux arm64 package from the
-[v0.1.2 release](https://github.com/DenisovAV/litert-edge-demos/releases/tag/v0.1.2) on the board (or copy it over),
-check it, unpack it and start it:
+Copy the Linux arm64 package (`litert_hackathon-v0.1.2-linux-arm64.tar.gz` and its `SHA256SUMS`: the package you
+received, or one built from source, see the [README](../README.md#building-from-source)) to the board, then check it,
+unpack it and start it:
 ```sh
 cd ~
-wget https://github.com/DenisovAV/litert-edge-demos/releases/download/v0.1.2/litert_hackathon-v0.1.2-linux-arm64.tar.gz \
-     https://github.com/DenisovAV/litert-edge-demos/releases/download/v0.1.2/SHA256SUMS
 sha256sum --ignore-missing -c SHA256SUMS
 tar -xzf litert_hackathon-v0.1.2-linux-arm64.tar.gz
 cd litert_hackathon-v0.1.2-linux-arm64

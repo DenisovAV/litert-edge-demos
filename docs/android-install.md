@@ -22,10 +22,9 @@ inside the app. **You bring the chat model**: one `.litertlm` file, copied to th
 ## 1. Install the APK
 
 **On the phone (main way)**
-1. Get `litert_hackathon-v0.1.2-arm64.apk` onto the phone: download it on the phone from the
-   [v0.1.2 release](https://github.com/DenisovAV/litert-edge-demos/releases/tag/v0.1.2) (577 MB), or copy it over
-   USB into *Downloads*. Direct link:
-   `https://github.com/DenisovAV/litert-edge-demos/releases/download/v0.1.2/litert_hackathon-v0.1.2-arm64.apk`
+1. Get `litert_hackathon-v0.1.2-arm64.apk` (577 MB: the APK you received, or one built from source, see the
+   [README](../README.md#building-from-source)) onto the phone: download it there, or copy it over USB into
+   *Downloads*.
 2. Open it from **My Files → Downloads** (or from the browser's downloads).
 3. Android asks to allow installing apps from this source: tap **Settings**, turn on **Allow from this source**, go
    back, tap **Install**.

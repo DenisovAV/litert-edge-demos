@@ -12,7 +12,7 @@ chat model** — one `.litertlm` file (a Gemma build for your phone's NPU, or Ge
 
 ## 1. Which build do I take?
 
-The files are on the [v0.1.2 release page](https://github.com/DenisovAV/litert-edge-demos/releases/tag/v0.1.2).
+The files come with this guide (or build them from source, see the [README](../README.md#building-from-source)).
 
 | Your device | File | Requirements | Guide |
 |---|---|---|---|
@@ -22,7 +22,7 @@ The files are on the [v0.1.2 release page](https://github.com/DenisovAV/litert-e
 | NVIDIA Jetson Orin (Nano 8 GB, NX, AGX) | `litert_hackathon-v0.1.2-linux-arm64.tar.gz` | **JetPack 6** or newer (JetPack 5 is not supported) | [jetson.md](jetson.md), [jetson-check.md](jetson-check.md) |
 | Arduino VENTUNO Q | `litert_hackathon-v0.1.2-linux-arm64.tar.gz` | its Ubuntu 24.04 system | [ventuno-q.md](ventuno-q.md) |
 
-Check the download against `SHA256SUMS` from the same page (`sha256sum --ignore-missing -c SHA256SUMS`).
+Check the files against `SHA256SUMS` (`sha256sum --ignore-missing -c SHA256SUMS`).
 
 ## 2. Install
 
